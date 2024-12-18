@@ -1,6 +1,7 @@
 import gym
 from gym import spaces
 import numpy as np
+from actions import Actions
 
 class DragonPitGame(gym.Env):
     """Main game environment for the dragon pit game."""
@@ -21,7 +22,7 @@ class DragonPitGame(gym.Env):
         # 0 - move up
         # 1 - move down
         # 2 - spit fire
-        self.action_space = spaces.MultiDiscrete([3, 3])
+        self.action_space = spaces.MultiDiscrete([len(Actions), len(Actions)])
 
         # Define observation space here.
         self.observation_space = spaces.Box(low=np.array(0, 0, 0, 0),
@@ -66,23 +67,35 @@ class DragonPitGame(gym.Env):
         dragon1_action, dragon2_action = action
         dragon1_reward, dragon2_reward = 0.0, 0.0
 
-        # Initialize rewards
-
+        Actions.validate_action(dragon1_action)
+        Actions.validate_action(dragon2_action)
 
 
         # Track dragon 1 action and update.
+        if dragon1_action == Actions.UP.value:
+            pass
+        elif dragon1_action == Actions.DOWN.value:
+            pass
 
 
         # Track dragon 2 action and update.
+        if dragon2_action == Actions.UP.value:
+            pass
+        elif dragon2_action == Actions.DOWN.value:
+            pass
 
         
         # Spit fire logic. If hit, decrease health by 10. Give reward for succesful hit and penalize for getting hit.
+        if dragon1_action == Actions.SPIT_FIRE.value:
+            pass
+        if dragon2_action == Actions.SPIT_FIRE.value:
+            pass
 
 
         # Logic for game has ended or not. 100 for winning. -100 for losing as rewards.
 
 
-        # Constrcut new observation
+        # Construct new observation
         observation = [self.dragon1, self.dragon2, self.dragon1_health, self.dragon2_health]
 
         return observation, (dragon1_reward, dragon2_reward), self.done, {}
