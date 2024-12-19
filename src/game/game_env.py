@@ -17,11 +17,6 @@ class DragonPitGame(gym.Env):
 
         self.height = screen_height
 
-        # Define action space here.
-        # 3 actions for each dragon.
-        # 0 - move up
-        # 1 - move down
-        # 2 - spit fire
         self.action_space = spaces.MultiDiscrete([len(Actions), len(Actions)])
 
         # Define observation space here.
@@ -30,8 +25,8 @@ class DragonPitGame(gym.Env):
                                             dtype=np.int32)
         
         # Initial positions and health.
-        self.dragon1 = None
-        self.dragon2 = None
+        self.dragon1 = self.height // 2
+        self.dragon2 = self.height // 2
         self.dragon1_health = 100
         self.dragon2_health = 100
 
@@ -73,26 +68,42 @@ class DragonPitGame(gym.Env):
 
         # Track dragon 1 action and update.
         if dragon1_action == Actions.UP.value:
-            pass
+            self.dragon1 = min(self.height, self.dragon1 + self.step_size)
         elif dragon1_action == Actions.DOWN.value:
-            pass
+            self.dragon1 = max(0, self.dragon1 - self.step_size)
 
 
         # Track dragon 2 action and update.
         if dragon2_action == Actions.UP.value:
-            pass
+            self.dragonw = min(self.height, self.dragon2 + self.step_size)
         elif dragon2_action == Actions.DOWN.value:
-            pass
+            self.dragon2 = max(0, self.dragon2 - self.step_size)
 
         
         # Spit fire logic. If hit, decrease health by 10. Give reward for succesful hit and penalize for getting hit.
         if dragon1_action == Actions.SPIT_FIRE.value:
-            pass
+            if self.dragon2 == self.dragon1: # successful hit
+                self.dragon2_health -= 10
+                dragon1_reward += 10
+                dragon2_reward -= 5
+
         if dragon2_action == Actions.SPIT_FIRE.value:
-            pass
+            if self.dragon2 == self.dragon1: # successful hit
+                self.dragon1_health -= 10
+                dragon2_reward += 10
+                dragon1_reward -= 5
 
-
+            
         # Logic for game has ended or not. 100 for winning. -100 for losing as rewards.
+
+        if self.dragon1_health <=0 or self.dragon2_health <=0:
+            if self.dragon1_health <= 0:
+                dragon1_reward -= 100
+                dragon2_reward += 100
+            if self.dragon2_health <=0:
+                dragon2_reward -= 100
+                dragon1_reward += 100
+
 
 
         # Construct new observation
