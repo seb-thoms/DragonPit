@@ -1,9 +1,9 @@
 import gym
 from gym import spaces
 import numpy as np
-from actions import Actions
+from game.actions import Actions
 
-class DragonPitGame(gym.Env):
+class DragonPitEnv(gym.Env):
     """Main game environment for the dragon pit game."""
     
     def __init__(self, screen_height: int):
@@ -13,16 +13,16 @@ class DragonPitGame(gym.Env):
         Args:
             screen_height (int): Height of the GUI display
         """
-        super(DragonPitGame, self).__init__()
+        super(DragonPitEnv, self).__init__()
 
         self.height = screen_height
 
         self.action_space = spaces.MultiDiscrete([len(Actions), len(Actions)])
 
         # Define observation space here.
-        self.observation_space = spaces.Box(low=np.array(0, 0, 0, 0),
-                                            high=np.array(self.height, self.height, 100, 100),
-                                            dtype=np.int32)
+        self.observation_space = spaces.Box(low = np.array([0, 0, 0, 0]),
+                                            high = np.array([self.height, self.height, 100, 100]),
+                                            dtype = np.int32)
         
         # Initial positions and health.
         self.dragon1 = self.height // 2
@@ -34,15 +34,16 @@ class DragonPitGame(gym.Env):
         self.step_size = self.height // 10
         
         self.done = False
-        self.state = None
-    
 
     def reset(self):
         """
         Resets the environment.
         """
         self.done = False
-        self.state = [0, 0, 100, 100]
+        dragon1_reward, dragon2_reward = 0.0, 0.0
+        observation = [self.height // 2, self.height // 2, 100, 100]
+
+        return observation, (dragon1_reward, dragon2_reward), self.done, {}
 
     def step(self, action: tuple) -> tuple[list, tuple[float, float], bool, dict]:
         """
@@ -95,12 +96,11 @@ class DragonPitGame(gym.Env):
 
             
         # Logic for game has ended or not. 100 for winning. -100 for losing as rewards.
-
         if self.dragon1_health <=0 or self.dragon2_health <=0:
             if self.dragon1_health <= 0:
                 dragon1_reward -= 100
                 dragon2_reward += 100
-            if self.dragon2_health <=0:
+            if self.dragon2_health <= 0:
                 dragon2_reward -= 100
                 dragon1_reward += 100
 
@@ -110,12 +110,22 @@ class DragonPitGame(gym.Env):
         observation = [self.dragon1, self.dragon2, self.dragon1_health, self.dragon2_health]
 
         return observation, (dragon1_reward, dragon2_reward), self.done, {}
-
-    def render(self, mode='human'):
+    
+    def get_state(self) -> dict:
         """
-        Rendering logic.
+        Returns the current state of the environment as a dictionary.
 
-        Args:
-            mode (str, optional): Rendering mode. Defaults to 'human'.
+        Returns:
+            dict: {
+                        "dragon1" : <Position of dragon 1>,
+                        "dragon2" : <Position of dragon 2>,
+                        "dragon1_health" : <Health of dragon 1>,
+                        "dragon2_health" : <Health of dragon 2>,
+                  }
         """
-        pass
+        return {
+            "dragon1": self.dragon1,
+            "dragon2": self.dragon2,
+            "dragon1_health": self.dragon1_health,
+            "dragon2_health": self.dragon2_health
+        }
